@@ -7,7 +7,7 @@ import { authGuard } from './auth/auth.guard';
 export const routes: Routes = [
   { 
     path: 'login', 
-    component: LoginComponent,
+    loadComponent: () => import('./demo/login/login').then(m => m.LoginComponent),
     title: 'Iniciar Sesión - Museo UTM'
   },
   {
