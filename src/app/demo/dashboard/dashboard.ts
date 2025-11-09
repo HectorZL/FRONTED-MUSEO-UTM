@@ -30,12 +30,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   };
 
   menuItems: MenuItem[] = [
-    { label: 'Dashboard', icon: 'dashboard', route: '/dashboard', isActive: true },
-    { label: 'Usuarios', icon: 'people', route: '/dashboard/users', isActive: false },
-    { label: 'Productos', icon: 'inventory_2', route: '/dashboard/products', isActive: false },
-    { label: 'Pedidos', icon: 'shopping_cart', route: '/dashboard/orders', isActive: false },
-    { label: 'Reportes', icon: 'bar_chart', route: '/dashboard/reports', isActive: false },
-    { label: 'Configuración', icon: 'settings', route: '/dashboard/settings', isActive: false }
+    { label: 'Inicio', icon: 'home', route: '/dashboard', isActive: true },
+    { label: 'Obras de Arte', icon: 'palette', route: '/dashboard/obras', isActive: false },
+    { label: 'Colecciones', icon: 'collections', route: '/dashboard/colecciones', isActive: false },
+    { label: 'Artistas', icon: 'person', route: '/dashboard/artistas', isActive: false },
+    { label: 'Exposiciones', icon: 'photo_library', route: '/dashboard/exposiciones', isActive: false },
+    { label: 'Eventos', icon: 'event', route: '/dashboard/eventos', isActive: false },
+    { label: 'Usuarios', icon: 'people', route: '/dashboard/usuarios', isActive: false },
+    { label: 'Configuración', icon: 'settings', route: '/dashboard/configuracion', isActive: false }
   ];
 
   constructor(private router: Router) {}
@@ -88,14 +90,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   getIconClass(icon: string): string {
-    const iconClasses: { [key: string]: string } = {
-      dashboard: 'material-icons-outlined',
-      people: 'material-icons-outlined',
-      inventory_2: 'material-icons-outlined',
-      shopping_cart: 'material-icons-outlined',
-      bar_chart: 'material-icons-outlined',
-      settings: 'material-icons-outlined'
-    };
-    return iconClasses[icon] || 'material-icons-outlined';
+    // All icons will use the outlined variant
+    return 'material-icons-outlined';
   }
 }
