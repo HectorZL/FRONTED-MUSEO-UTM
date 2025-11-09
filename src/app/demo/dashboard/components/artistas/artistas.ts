@@ -1,13 +1,12 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
 
 export interface Artista {
   id: number;
   nombre: string;
   apellido: string;
-  rol_academico: string;
+  ocupacion: string;
   foto_url: string;
   created_at: string;
 }
@@ -19,138 +18,150 @@ export interface Artista {
   templateUrl: './artistas.html',
   styleUrls: ['./artistas.scss']
 })
-export class ArtistasComponent implements OnInit, OnDestroy {
+export class ArtistasComponent implements OnInit {
   // Datos de ejemplo
   artistas: Artista[] = [
     {
       id: 1,
       nombre: 'Ana',
       apellido: 'García',
-      rol_academico: 'Profesor Titular',
-      foto_url: 'https://via.placeholder.com/50',
+      ocupacion: 'Pintora',
+      foto_url: 'https://randomuser.me/api/portraits/women/44.jpg',
       created_at: '2024-01-15'
     },
     {
       id: 2,
       nombre: 'Carlos',
       apellido: 'Rodríguez',
-      rol_academico: 'Investigador',
-      foto_url: 'https://via.placeholder.com/50',
+      ocupacion: 'Escultor',
+      foto_url: 'https://randomuser.me/api/portraits/men/32.jpg',
       created_at: '2024-01-16'
     },
     {
       id: 3,
       nombre: 'María',
       apellido: 'López',
-      rol_academico: 'Profesor Asociado',
-      foto_url: 'https://via.placeholder.com/50',
+      ocupacion: 'Fotógrafa',
+      foto_url: 'https://randomuser.me/api/portraits/women/65.jpg',
       created_at: '2024-01-17'
     }
   ];
 
   // Filtros
-  filtroNombre: string = '';
-  filtroApellido: string = '';
-  filtroRol: string = '';
-  
-  // Nuevo artista
-  nuevoArtista: Omit<Artista, 'id' | 'created_at'> = {
-    nombre: '',
-    apellido: '',
-    rol_academico: '',
-    foto_url: ''
-  };
-
-  // Estados
-  mostrarFormulario: boolean = false;
+  searchTerm: string = '';
   artistasFiltrados: Artista[] = [];
-  rolesUnicos: string[] = [];
-
-  private subscriptions = new Subscription();
+  
+  // Estados
+  showAddForm: boolean = false;
+  selectedArtista: Artista | null = null;
 
   ngOnInit() {
-    this.actualizarFiltros();
-    this.extraerRolesUnicos();
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
+    this.artistasFiltrados = [...this.artistas];
   }
 
   // Filtrar artistas
-  actualizarFiltros() {
-    this.artistasFiltrados = this.artistas.filter(artista => {
-      const coincideNombre = !this.filtroNombre || 
-        artista.nombre.toLowerCase().includes(this.filtroNombre.toLowerCase());
-      const coincideApellido = !this.filtroApellido || 
-        artista.apellido.toLowerCase().includes(this.filtroApellido.toLowerCase());
-      const coincideRol = !this.filtroRol || 
-        artista.rol_academico === this.filtroRol;
-
-      return coincideNombre && coincideApellido && coincideRol;
-    });
-  }
-
-  // Extraer roles únicos para el filtro
-  extraerRolesUnicos() {
-    const roles = this.artistas.map(artista => artista.rol_academico);
-    this.rolesUnicos = [...new Set(roles)];
-  }
-
-  // Agregar nuevo artista
-  agregarArtista() {
-    if (this.validarFormulario()) {
-      const nuevoId = Math.max(...this.artistas.map(a => a.id)) + 1;
-      const artista: Artista = {
-        ...this.nuevoArtista,
-        id: nuevoId,
-        created_at: new Date().toISOString()
-      };
-
-      this.artistas.unshift(artista);
-      this.limpiarFormulario();
-      this.actualizarFiltros();
-      this.extraerRolesUnicos();
-      this.mostrarFormulario = false;
+  filterArtists() {
+    if (!this.searchTerm) {
+      this.artistasFiltrados = [...this.artistas];
+      return;
     }
+    
+    const term = this.searchTerm.toLowerCase();
+    this.artistasFiltrados = this.artistas.filter(artista => 
+      artista.nombre.toLowerCase().includes(term) ||
+      artista.apellido.toLowerCase().includes(term) ||
+      artista.ocupacion.toLowerCase().includes(term)
+    );
   }
 
-  // Validar formulario
-  validarFormulario(): boolean {
-    return !!this.nuevoArtista.nombre && 
-           !!this.nuevoArtista.apellido && 
-           !!this.nuevoArtista.rol_academico;
+  // Seleccionar artista para ver detalles
+  selectArtista(artista: Artista) {
+    this.selectedArtista = artista;
   }
 
-  // Limpiar formulario
-  limpiarFormulario() {
-    this.nuevoArtista = {
-      nombre: '',
-      apellido: '',
-      rol_academico: '',
-      foto_url: ''
-    };
-  }
-
-  // Limpiar filtros
-  limpiarFiltros() {
-    this.filtroNombre = '';
-    this.filtroApellido = '';
-    this.filtroRol = '';
-    this.actualizarFiltros();
-  }
-
-  // Eliminar artista
-  eliminarArtista(id: number) {
-    if (confirm('¿Estás seguro de que deseas eliminar este artista?')) {
-      this.artistas = this.artistas.filter(artista => artista.id !== id);
-      this.actualizarFiltros();
-      this.extraerRolesUnicos();
-    }
+  // Cerrar vista de detalles
+  closeDetails() {
+    this.selectedArtista = null;
   }
 
   // Formatear fecha
-  formatearFecha(fecha: string): string {
-    return new Date(fecha).toLocaleDateString('es-ES');
+  formatDate(dateString: string): string {
+    const options: Intl.DateTimeFormatOptions = { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    };
+    return new Date(dateString).toLocaleDateString('es-ES', options);
+  }
+
+  // Obtener iniciales
+  getInitials(nombre: string, apellido: string): string {
+    return `${nombre.charAt(0)}${apellido.charAt(0)}`.toUpperCase();
+  }
+
+  // Mostrar/ocultar formulario
+  toggleAddForm() {
+    this.showAddForm = !this.showAddForm;
+    if (!this.showAddForm) {
+      this.selectedArtista = null;
+    }
+  }
+
+  // Inicializar nuevo artista
+  initNewArtista() {
+    this.selectedArtista = {
+      id: 0,
+      nombre: '',
+      apellido: '',
+      ocupacion: '',
+      foto_url: '',
+      created_at: new Date().toISOString().split('T')[0]
+    };
+    this.showAddForm = true;
+  }
+
+  // Editar artista
+  editArtista(artista: Artista) {
+    this.selectedArtista = { ...artista };
+    this.showAddForm = true;
+  }
+
+  // Eliminar artista
+  deleteArtista(id: number) {
+    if (confirm('¿Estás seguro de que deseas eliminar este artista?')) {
+      this.artistas = this.artistas.filter(a => a.id !== id);
+      this.filterArtists();
+    }
+  }
+
+  // Guardar artista (crear o actualizar)
+  saveArtista() {
+    if (!this.selectedArtista) return;
+
+    if (!this.selectedArtista.nombre || !this.selectedArtista.apellido || !this.selectedArtista.ocupacion) {
+      alert('Por favor completa todos los campos obligatorios');
+      return;
+    }
+
+    if (this.selectedArtista.id === 0) {
+      // Nuevo artista
+      const newId = Math.max(0, ...this.artistas.map(a => a.id)) + 1;
+      const newArtista: Artista = {
+        ...this.selectedArtista,
+        id: newId,
+        created_at: new Date().toISOString().split('T')[0]
+      };
+      this.artistas.push(newArtista);
+    } else {
+      // Actualizar artista existente
+      const index = this.artistas.findIndex(a => a.id === this.selectedArtista?.id);
+      if (index !== -1) {
+        this.artistas[index] = { ...this.selectedArtista };
+      }
+    }
+
+    this.filterArtists();
+    this.showAddForm = false;
+    this.selectedArtista = null;
   }
 }

@@ -196,6 +196,13 @@ export class ObrasComponent implements OnInit {
     return status ? 'Activo' : 'Inactivo';
   }
 
+  // Delete artwork by ID
+  deleteArtwork(id: number) {
+    if (confirm('¿Estás seguro de que deseas eliminar esta obra?')) {
+      this.artworks.update(artworks => artworks.filter(artwork => artwork.id !== id));
+    }
+  }
+
   getStatusBadgeClass(status: boolean): string {
     return status 
       ? 'bg-green-100 text-green-800 border-green-200' 
