@@ -3,12 +3,12 @@
     
     <!-- Header -->
     <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900">Galería de Obras de Arte</h1>
-      <p class="text-gray-600 mt-2">Gestiona y explora tu colección de arte</p>
+      <h1 class="text-3xl font-bold text-gray-900">Obras de Arte</h1>
+      <p class="text-gray-600 mt-2">Gestiona el catálogo de obras de arte</p>
     </div>
 
-    <!-- Botón crear y estadísticas -->
-    <div class="flex justify-between items-center mb-6">
+    <!-- Botón crear y búsqueda -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
       <button 
         (click)="openCreateForm()"
         class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
@@ -16,84 +16,42 @@
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
         </svg>
-        Nueva Obra
+        Agregar Obra
       </button>
 
-      <div class="text-sm text-gray-600">
-        Mostrando <span class="font-semibold">{{ filteredCount }}</span> de 
-        <span class="font-semibold">{{ totalArtworks }}</span> obras
-      </div>
-    </div>
-
-    <!-- Filtros -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        
-        <!-- Búsqueda -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Buscar</label>
+      <div class="w-full md:w-1/3">
+        <div class="relative">
           <input
             type="text"
             [value]="searchTerm()"
             (input)="onSearchChange($event)"
-            placeholder="Título, artista..."
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="Buscar obras..."
+            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
           >
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
         </div>
+      </div>
+    </div>
 
-        <!-- Categoría -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
-          <select
-            [value]="categoryFilter()"
-            (change)="onCategoryChange($event)"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option value="">Todas</option>
-            @for (category of categories; track category) {
-              <option [value]="category">{{ category }}</option>
-            }
-          </select>
-        </div>
-
-        <!-- Estado -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
-          <select
-            [value]="statusFilter()"
-            (change)="onStatusChange($event)"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option value="">Todos</option>
-            @for (status of statuses; track status) {
-              <option [value]="status">{{ getStatusText(status) }}</option>
-            }
-          </select>
-        </div>
-
-        <!-- Año -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Año</label>
+    <!-- Filtro de año -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+      <div class="flex flex-wrap items-center gap-4">
+        <div class="w-full sm:w-auto">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Año</label>
           <select
             [value]="yearFilter()"
             (change)="onYearChange($event)"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            class="w-full sm:w-40 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
           >
-            <option value="">Todos</option>
+            <option value="">Todos los años</option>
             @for (year of years; track year) {
               <option [value]="year">{{ year }}</option>
             }
           </select>
-        </div>
-
-        <!-- Botón limpiar -->
-        <div class="flex items-end">
-          <button
-            (click)="clearFilters()"
-            class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md font-medium transition-colors duration-200"
-          >
-            Limpiar
-          </button>
         </div>
       </div>
     </div>
@@ -105,24 +63,21 @@
           <thead class="bg-gray-50">
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Obra
+                ID
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Artista
+                Título
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Categoría
+                Descripción
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Año
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Precio
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Estado
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Acciones
               </th>
             </tr>
@@ -130,43 +85,29 @@
           <tbody class="bg-white divide-y divide-gray-200">
             @for (artwork of filteredArtworks(); track artwork.id) {
               <tr class="hover:bg-gray-50 transition-colors duration-150">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <div class="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                      <svg class="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                      </svg>
-                    </div>
-                    <div class="ml-4">
-                      <div class="text-sm font-medium text-gray-900">{{ artwork.title }}</div>
-                      <div class="text-sm text-gray-500 line-clamp-1">{{ artwork.description }}</div>
-                    </div>
-                  </div>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  #{{ artwork.id }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-900">{{ artwork.artist }}</div>
+                  <div class="text-sm font-medium text-gray-900">{{ artwork.title }}</div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {{ artwork.category }}
-                  </span>
+                <td class="px-6 py-4">
+                  <div class="text-sm text-gray-500 max-w-md line-clamp-2">{{ artwork.description }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {{ artwork.year }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {{ formatPrice(artwork.price) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border [getStatusBadgeClass(artwork.status)]">
                     {{ getStatusText(artwork.status) }}
                   </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div class="flex items-center gap-2">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
+                  <div class="flex justify-end items-center gap-2">
                     <button
                       (click)="openEditForm(artwork)"
-                      class="text-indigo-600 hover:text-indigo-900 transition-colors duration-200"
+                      class="text-indigo-600 hover:text-indigo-900 transition-colors duration-200 p-1 rounded-full hover:bg-indigo-50"
+                      title="Editar"
                     >
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -174,7 +115,8 @@
                     </button>
                     <button
                       (click)="deleteArtwork(artwork.id)"
-                      class="text-red-600 hover:text-red-900 transition-colors duration-200"
+                      class="text-red-600 hover:text-red-900 transition-colors duration-200 p-1 rounded-full hover:bg-red-50"
+                      title="Eliminar"
                     >
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -185,13 +127,13 @@
               </tr>
             } @empty {
               <tr>
-                <td colspan="7" class="px-6 py-24 text-center">
-                  <div class="flex flex-col items-center justify-center text-gray-500">
-                    <svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                <td colspan="6" class="px-6 py-12 text-center">
+                  <div class="flex flex-col items-center justify-center text-gray-400">
+                    <svg class="w-12 h-12 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
-                    <p class="text-lg font-medium mb-2">No se encontraron obras</p>
-                    <p class="text-sm">Intenta ajustar los filtros o crear una nueva obra</p>
+                    <p class="text-base font-medium mb-1">No se encontraron obras</p>
+                    <p class="text-sm">Intenta ajustar los filtros o crea una nueva obra</p>
                   </div>
                 </td>
               </tr>
@@ -209,7 +151,7 @@
             <!-- Header -->
             <div class="flex justify-between items-center mb-6">
               <h2 class="text-2xl font-bold text-gray-900">
-                {{ isEditing() ? 'Editar Obra' : 'Nueva Obra de Arte' }}
+                {{ isEditing() ? 'Editar Obra' : 'Nueva Obra' }}
               </h2>
               <button
                 (click)="closeForm()"
@@ -239,39 +181,7 @@
                   >
                 </div>
 
-                <!-- Artista -->
-                <div class="md:col-span-2">
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Artista *
-                  </label>
-                  <input
-                    type="text"
-                    [(ngModel)]="newArtwork.artist"
-                    name="artist"
-                    required
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Nombre del artista"
-                  >
-                </div>
-
-                <!-- Categoría y Año -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Categoría *
-                  </label>
-                  <select
-                    [(ngModel)]="newArtwork.category"
-                    name="category"
-                    required
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  >
-                    <option value="">Selecciona una categoría</option>
-                    @for (category of categories; track category) {
-                      <option [value]="category">{{ category }}</option>
-                    }
-                  </select>
-                </div>
-
+                <!-- Año -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">
                     Año *
@@ -288,35 +198,25 @@
                   </select>
                 </div>
 
-                <!-- Precio y Estado -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Precio (€)
-                  </label>
-                  <input
-                    type="number"
-                    [(ngModel)]="newArtwork.price"
-                    name="price"
-                    min="0"
-                    step="0.01"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="0.00"
-                  >
-                </div>
-
+                <!-- Estado -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">
                     Estado
                   </label>
-                  <select
-                    [(ngModel)]="newArtwork.status"
-                    name="status"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  >
-                    @for (status of statuses; track status) {
-                      <option [value]="status">{{ getStatusText(status) }}</option>
-                    }
-                  </select>
+                  <div class="relative mt-1">
+                    <label class="inline-flex items-center cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        [(ngModel)]="newArtwork.status" 
+                        name="status"
+                        class="sr-only peer"
+                      >
+                      <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                      <span class="ml-3 text-sm font-medium text-gray-700">
+                        {{ newArtwork.status ? 'Activo' : 'Inactivo' }}
+                      </span>
+                    </label>
+                  </div>
                 </div>
 
                 <!-- Descripción -->
