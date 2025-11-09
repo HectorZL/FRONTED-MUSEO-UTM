@@ -46,18 +46,23 @@ export class LoginComponent {
       setTimeout(() => {
         const credentials = this.loginForm.value as LoginRequest;
         
-        // Aquí iría tu llamada real al servicio de autenticación
-        console.log('Login attempt:', credentials);
-        
-        // Simulación de éxito/error
-        if (credentials.email === 'usuario@ejemplo.com' && credentials.password === '123456') {
-          this.router.navigate(['/dashboard']);
+        // Credenciales de ejemplo
+        if (credentials.email === 'admin@example.com' && credentials.password === 'admin123') {
+          // Guardar estado de autenticación
+          localStorage.setItem('isAuthenticated', 'true');
+          // Redirigir al dashboard
+          this.router.navigate(['/dashboard']).then(success => {
+            if (!success) {
+              console.error('Error al navegar al dashboard');
+              this.errorMessage.set('Error al redirigir al panel de control');
+            }
+          });
         } else {
-          this.errorMessage.set('Credenciales incorrectas. Intenta con usuario@ejemplo.com / 123456');
+          this.errorMessage.set('Credenciales incorrectas. Intenta con admin@example.com / admin123');
         }
         
         this.isLoading.set(false);
-      }, 1500);
+      }, 500);
     } else {
       this.loginForm.markAllAsTouched();
     }

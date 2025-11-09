@@ -1,0 +1,151 @@
+<div class="min-h-screen bg-gray-50 flex">
+  <!-- Sidebar -->
+  <aside 
+    [class]="isSidebarOpen ? 'w-64' : 'w-20'"
+    class="bg-white shadow-lg transition-all duration-300 ease-in-out fixed lg:relative h-screen z-40">
+    
+    <!-- Logo -->
+    <div class="p-4 border-b border-gray-200">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3" *ngIf="isSidebarOpen">
+          <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <span class="text-white font-bold text-sm">A</span>
+          </div>
+          <h1 class="text-xl font-bold text-gray-800">AdminPanel</h1>
+        </div>
+        <button 
+          (click)="toggleSidebar()"
+          class="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+          <span class="material-icons-outlined text-gray-600">
+            {{ isSidebarOpen ? 'menu_open' : 'menu' }}
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="mt-6">
+      <ul class="space-y-2 px-3">
+        <li *ngFor="let item of menuItems">
+          <a 
+            [routerLink]="item.route"
+            routerLinkActive="bg-blue-50 text-blue-600 border-blue-600"
+            [class]="'flex items-center px-3 py-3 rounded-lg transition-all duration-200 hover:bg-gray-50 border-l-4 ' + 
+                     (item.isActive ? 'bg-blue-50 text-blue-600 border-blue-600' : 'border-transparent text-gray-700')">
+            
+            <span class="material-icons-outlined text-xl">
+              {{ item.icon }}
+            </span>
+            
+            <span *ngIf="isSidebarOpen" class="ml-3 font-medium">
+              {{ item.label }}
+            </span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- User Profile -->
+    <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-white">
+      <div class="flex items-center space-x-3">
+        <img 
+          [src]="user.avatar" 
+          [alt]="user.name"
+          class="w-10 h-10 rounded-full object-cover border-2 border-gray-200">
+        
+        <div *ngIf="isSidebarOpen" class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-gray-900 truncate">
+            {{ user.name }}
+          </p>
+          <p class="text-xs text-gray-500 truncate">
+            {{ user.email }}
+          </p>
+        </div>
+        
+        <button 
+          (click)="logout()"
+          class="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+          [class]="isSidebarOpen ? '' : 'ml-auto'">
+          <span class="material-icons-outlined text-gray-600 text-xl">
+            logout
+          </span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="flex-1 flex flex-col min-w-0">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
+      <div class="flex items-center justify-between px-6 py-4">
+        <!-- Page Title and Breadcrumb -->
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">
+            {{ currentPageTitle }}
+          </h1>
+          <nav class="flex text-sm text-gray-500 mt-1">
+            <a href="#" class="hover:text-blue-600">Home</a>
+            <span class="mx-2">/</span>
+            <span class="text-gray-700">{{ currentPageTitle }}</span>
+          </nav>
+        </div>
+
+        <!-- Header Actions -->
+        <div class="flex items-center space-x-4">
+          <!-- Search -->
+          <div class="relative">
+            <input 
+              type="text" 
+              placeholder="Buscar..."
+              class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200">
+            <span class="material-icons-outlined absolute left-3 top-2 text-gray-400">
+              search
+            </span>
+          </div>
+
+          <!-- Notifications -->
+          <button class="relative p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+            <span class="material-icons-outlined text-gray-600">
+              notifications
+            </span>
+            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+          </button>
+
+          <!-- Messages -->
+          <button class="relative p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+            <span class="material-icons-outlined text-gray-600">
+              email
+            </span>
+            <span class="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full"></span>
+          </button>
+
+          <!-- User Menu -->
+          <div class="relative">
+            <button class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+              <img 
+                [src]="user.avatar" 
+                [alt]="user.name"
+                class="w-8 h-8 rounded-full object-cover">
+              <span class="material-icons-outlined text-gray-600 text-lg">
+                expand_more
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area with Router Outlet -->
+    <main class="flex-1 p-6 overflow-auto">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <!-- Mobile Overlay -->
+  <div 
+    *ngIf="isSidebarOpen" 
+    (click)="toggleSidebar()"
+    class="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30">
+  </div>
+</div>
