@@ -30,7 +30,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   };
 
   menuItems: MenuItem[] = [
-    { label: 'Inicio', icon: 'home', route: '/dashboard', isActive: true },
     { label: 'Obras de Arte', icon: 'palette', route: '/dashboard/obras', isActive: false },
     { label: 'Colecciones', icon: 'collections', route: '/dashboard/colecciones', isActive: false },
     { label: 'Autores', icon: 'person', route: '/dashboard/autores', isActive: false },

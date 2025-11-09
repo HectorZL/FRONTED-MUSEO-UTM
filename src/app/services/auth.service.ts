@@ -86,8 +86,26 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    const token = localStorage.getItem(this.jwtKey);
-    return !!token;
+    const token = this.getToken();
+    if (!token) {
+      console.log('No authentication token found');
+      return false;
+    }
+    
+    // Optional: Add token expiration check if your JWT has an 'exp' claim
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.exp && Date.now() >= payload.exp * 1000) {
+        console.log('Token has expired');
+        this.logout();
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      this.logout();
+      return false;
+    }
   }
 
   logout(): void {
@@ -97,6 +115,20 @@ export class AuthService {
 
   getToken(): string | null {
     return localStorage.getItem(this.jwtKey);
+  }
+
+  getUserRole(): string | null {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        return user.role || null;
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+        return null;
+      }
+    }
+    return null;
   }
 
   getCurrentUser() {
