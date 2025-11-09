@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './demo/login/login';
 import { DashboardComponent } from './demo/dashboard/dashboard';
-import { ArtistasComponent } from './demo/dashboard/components/artistas/artistas';
+import { AutoresComponent } from './demo/dashboard/components/autor/autor';
 import { ObrasComponent } from './demo/dashboard/components/obras/obras';
 import { authGuard } from './auth/auth.guard';
 
@@ -27,9 +27,9 @@ export const routes: Routes = [
         children: []
       },
       {
-        path: 'artistas',
-        component: ArtistasComponent,
-        data: { title: 'Artistas' }
+        path: 'autores',
+        component: AutoresComponent,
+        data: { title: 'Autores' }
       },
       {
         path: 'obras',

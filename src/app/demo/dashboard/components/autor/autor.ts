@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-export interface Artista {
+export interface Autor {
   id: number;
   nombre: string;
   apellido: string;
@@ -12,15 +12,15 @@ export interface Artista {
 }
 
 @Component({
-  selector: 'app-artistas',
+  selector: 'app-autores',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './artistas.html',
-  styleUrls: ['./artistas.scss']
+  templateUrl: './autor.html',
+  styleUrls: ['./autor.scss']
 })
-export class ArtistasComponent implements OnInit {
+export class AutoresComponent implements OnInit {
   // Datos de ejemplo
-  artistas: Artista[] = [
+  autores: Autor[] = [
     {
       id: 1,
       nombre: 'Ana',
@@ -49,39 +49,39 @@ export class ArtistasComponent implements OnInit {
 
   // Filtros
   searchTerm: string = '';
-  artistasFiltrados: Artista[] = [];
+  autoresFiltrados: Autor[] = [];
   
   // Estados
   showAddForm: boolean = false;
-  selectedArtista: Artista | null = null;
+  selectedAutor: Autor | null = null;
 
   ngOnInit() {
-    this.artistasFiltrados = [...this.artistas];
+    this.autoresFiltrados = [...this.autores];
   }
 
   // Filtrar artistas
-  filterArtists() {
+  filterAutores() {
     if (!this.searchTerm) {
-      this.artistasFiltrados = [...this.artistas];
+      this.autoresFiltrados = [...this.autores];
       return;
     }
     
     const term = this.searchTerm.toLowerCase();
-    this.artistasFiltrados = this.artistas.filter(artista => 
-      artista.nombre.toLowerCase().includes(term) ||
-      artista.apellido.toLowerCase().includes(term) ||
-      artista.ocupacion.toLowerCase().includes(term)
+    this.autoresFiltrados = this.autores.filter(autor => 
+      autor.nombre.toLowerCase().includes(term) ||
+      autor.apellido.toLowerCase().includes(term) ||
+      autor.ocupacion.toLowerCase().includes(term)
     );
   }
 
   // Seleccionar artista para ver detalles
-  selectArtista(artista: Artista) {
-    this.selectedArtista = artista;
+  selectAutor(autor: Autor) {
+    this.selectedAutor = autor;
   }
 
   // Cerrar vista de detalles
   closeDetails() {
-    this.selectedArtista = null;
+    this.selectedAutor = null;
   }
 
   // Formatear fecha
@@ -103,13 +103,13 @@ export class ArtistasComponent implements OnInit {
   toggleAddForm() {
     this.showAddForm = !this.showAddForm;
     if (!this.showAddForm) {
-      this.selectedArtista = null;
+      this.selectedAutor = null;
     }
   }
 
   // Inicializar nuevo artista
-  initNewArtista() {
-    this.selectedArtista = {
+  initNewAutor() {
+    this.selectedAutor = {
       id: 0,
       nombre: '',
       apellido: '',
@@ -121,47 +121,47 @@ export class ArtistasComponent implements OnInit {
   }
 
   // Editar artista
-  editArtista(artista: Artista) {
-    this.selectedArtista = { ...artista };
+  editAutor(autor: Autor) {
+    this.selectedAutor = { ...autor };
     this.showAddForm = true;
   }
 
   // Eliminar artista
-  deleteArtista(id: number) {
-    if (confirm('¿Estás seguro de que deseas eliminar este artista?')) {
-      this.artistas = this.artistas.filter(a => a.id !== id);
-      this.filterArtists();
+  deleteAutor(id: number) {
+    if (confirm('¿Estás seguro de que deseas eliminar este autor?')) {
+      this.autores = this.autores.filter(a => a.id !== id);
+      this.filterAutores();
     }
   }
 
   // Guardar artista (crear o actualizar)
-  saveArtista() {
-    if (!this.selectedArtista) return;
+  saveAutor() {
+    if (!this.selectedAutor) return;
 
-    if (!this.selectedArtista.nombre || !this.selectedArtista.apellido || !this.selectedArtista.ocupacion) {
+    if (!this.selectedAutor.nombre || !this.selectedAutor.apellido || !this.selectedAutor.ocupacion) {
       alert('Por favor completa todos los campos obligatorios');
       return;
     }
 
-    if (this.selectedArtista.id === 0) {
-      // Nuevo artista
-      const newId = Math.max(0, ...this.artistas.map(a => a.id)) + 1;
-      const newArtista: Artista = {
-        ...this.selectedArtista,
+    if (this.selectedAutor.id === 0) {
+      // Nuevo autor
+      const newId = Math.max(0, ...this.autores.map(a => a.id)) + 1;
+      const newAutor: Autor = {
+        ...this.selectedAutor,
         id: newId,
         created_at: new Date().toISOString().split('T')[0]
       };
-      this.artistas.push(newArtista);
+      this.autores.push(newAutor);
     } else {
-      // Actualizar artista existente
-      const index = this.artistas.findIndex(a => a.id === this.selectedArtista?.id);
+      // Actualizar autor existente
+      const index = this.autores.findIndex(a => a.id === this.selectedAutor?.id);
       if (index !== -1) {
-        this.artistas[index] = { ...this.selectedArtista };
+        this.autores[index] = { ...this.selectedAutor };
       }
     }
 
-    this.filterArtists();
+    this.filterAutores();
     this.showAddForm = false;
-    this.selectedArtista = null;
+    this.selectedAutor = null;
   }
 }

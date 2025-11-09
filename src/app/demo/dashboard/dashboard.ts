@@ -33,7 +33,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     { label: 'Inicio', icon: 'home', route: '/dashboard', isActive: true },
     { label: 'Obras de Arte', icon: 'palette', route: '/dashboard/obras', isActive: false },
     { label: 'Colecciones', icon: 'collections', route: '/dashboard/colecciones', isActive: false },
-    { label: 'Artistas', icon: 'person', route: '/dashboard/artistas', isActive: false },
+    { label: 'Autores', icon: 'person', route: '/dashboard/autores', isActive: false },
     { label: 'Exposiciones', icon: 'photo_library', route: '/dashboard/exposiciones', isActive: false },
     { label: 'Eventos', icon: 'event', route: '/dashboard/eventos', isActive: false },
     { label: 'Usuarios', icon: 'people', route: '/dashboard/usuarios', isActive: false },
