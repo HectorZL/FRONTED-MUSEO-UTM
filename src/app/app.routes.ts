@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './demo/login/login';
 import { DashboardComponent } from './demo/dashboard/dashboard';
 import { ArtistasComponent } from './demo/dashboard/components/artistas/artistas';
+import { ObrasComponent } from './demo/dashboard/components/obras/obras';
 import { authGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
@@ -28,8 +29,13 @@ export const routes: Routes = [
       {
         path: 'artistas',
         component: ArtistasComponent,
-        title: 'Artistas - Museo UTM',
         data: { title: 'Artistas' }
+      },
+      {
+        path: 'obras',
+        component: ObrasComponent,
+        title: 'Obras - Museo UTM',
+        data: { title: 'Obras' }
       }
       // Agrega más rutas hijas del dashboard aquí
     ]
