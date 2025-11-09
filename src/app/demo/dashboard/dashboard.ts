@@ -24,18 +24,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
   isSidebarOpen = true;
   currentPageTitle = 'Dashboard';
   user = {
-    name: 'Administrador',
-    email: 'admin@museoutm.edu.mx',
-    avatar: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=150&h=150&fit=crop&crop=face'
+    name: 'Juan Pérez',
+    email: 'juan.perez@empresa.com',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
   };
 
   menuItems: MenuItem[] = [
     { label: 'Inicio', icon: 'home', route: '/dashboard', isActive: true },
-    { label: 'Obras', icon: 'palette', route: '/dashboard/obras', isActive: false },
-    { label: 'Artistas', icon: 'person', route: '/dashboard/artistas', isActive: false },
+    { label: 'Obras de Arte', icon: 'palette', route: '/dashboard/obras', isActive: false },
     { label: 'Colecciones', icon: 'collections', route: '/dashboard/colecciones', isActive: false },
-    { label: 'Eventos', icon: 'event', route: '/dashboard/eventos', isActive: false },
+    { label: 'Artistas', icon: 'person', route: '/dashboard/artistas', isActive: false },
     { label: 'Exposiciones', icon: 'photo_library', route: '/dashboard/exposiciones', isActive: false },
+    { label: 'Eventos', icon: 'event', route: '/dashboard/eventos', isActive: false },
+    { label: 'Usuarios', icon: 'people', route: '/dashboard/usuarios', isActive: false },
     { label: 'Configuración', icon: 'settings', route: '/dashboard/configuracion', isActive: false }
   ];
 
@@ -89,15 +90,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   getIconClass(icon: string): string {
-    const iconClasses: { [key: string]: string } = {
-      home: 'material-icons-outlined',
-      palette: 'material-icons-outlined',
-      person: 'material-icons-outlined',
-      collections: 'material-icons-outlined',
-      event: 'material-icons-outlined',
-      photo_library: 'material-icons-outlined',
-      settings: 'material-icons-outlined'
-    };
-    return iconClasses[icon] || 'material-icons-outlined';
+    // All icons will use the outlined variant
+    return 'material-icons-outlined';
   }
 }
