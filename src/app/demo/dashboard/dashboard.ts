@@ -30,13 +30,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   };
 
   menuItems: MenuItem[] = [
+    { label: 'Inicio', icon: 'home', route: '/dashboard', isActive: false },
     { label: 'Obras de Arte', icon: 'palette', route: '/dashboard/obras', isActive: false },
-    { label: 'Colecciones', icon: 'collections', route: '/dashboard/colecciones', isActive: false },
-    { label: 'Autores', icon: 'person', route: '/dashboard/autores', isActive: false },
-    { label: 'Exposiciones', icon: 'photo_library', route: '/dashboard/exposiciones', isActive: false },
-    { label: 'Eventos', icon: 'event', route: '/dashboard/eventos', isActive: false },
-    { label: 'Usuarios', icon: 'people', route: '/dashboard/usuarios', isActive: false },
-    { label: 'Configuración', icon: 'settings', route: '/dashboard/configuracion', isActive: false }
+    { label: 'Autores', icon: 'person', route: '/dashboard/autores', isActive: false }
+    // Rutas comentadas hasta que se implementen
+    // { label: 'Colecciones', icon: 'collections', route: '/dashboard/colecciones', isActive: false },
+    // { label: 'Exposiciones', icon: 'photo_library', route: '/dashboard/exposiciones', isActive: false },
+    // { label: 'Eventos', icon: 'event', route: '/dashboard/eventos', isActive: false },
+    // { label: 'Usuarios', icon: 'people', route: '/dashboard/usuarios', isActive: false },
+    // { label: 'Configuración', icon: 'settings', route: '/dashboard/configuracion', isActive: false }
   ];
 
   constructor(private router: Router) {}

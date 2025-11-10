@@ -1,14 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs/operators';
+import { AutorService, Autor } from '../../../../services/autor.service';
 
-export interface Autor {
-  id: number;
-  nombre: string;
-  apellido: string;
-  ocupacion: string;
-  foto_url: string;
-  created_at: string;
+interface NewAutor extends Omit<Autor, 'id' | 'created_at'> {
+  // Extends Autor interface but makes id and created_at optional for new entries
 }
 
 @Component({
@@ -19,149 +16,252 @@ export interface Autor {
   styleUrls: ['./autor.scss']
 })
 export class AutoresComponent implements OnInit {
-  // Datos de ejemplo
-  autores: Autor[] = [
-    {
-      id: 1,
-      nombre: 'Ana',
-      apellido: 'García',
-      ocupacion: 'Pintora',
-      foto_url: 'https://randomuser.me/api/portraits/women/44.jpg',
-      created_at: '2024-01-15'
-    },
-    {
-      id: 2,
-      nombre: 'Carlos',
-      apellido: 'Rodríguez',
-      ocupacion: 'Escultor',
-      foto_url: 'https://randomuser.me/api/portraits/men/32.jpg',
-      created_at: '2024-01-16'
-    },
-    {
-      id: 3,
-      nombre: 'María',
-      apellido: 'López',
-      ocupacion: 'Fotógrafa',
-      foto_url: 'https://randomuser.me/api/portraits/women/65.jpg',
-      created_at: '2024-01-17'
-    }
-  ];
-
-  // Filtros
-  searchTerm: string = '';
-  autoresFiltrados: Autor[] = [];
-  
-  // Estados
-  showAddForm: boolean = false;
+  autores: Autor[] = [];
+  filteredAutores: Autor[] = [];
   selectedAutor: Autor | null = null;
+  showAddForm = false;
+  isLoading = false;
+  error: string | null = null;
+  searchTerm = '';
+  newAutor: NewAutor = {
+    nombre: '',
+    apellido: '',
+    ocupacion: '',
+    foto_url: null
+  };
+  selectedFile: File | null = null;
+  
+  // Default avatar as a data URL - SVG of a user icon
+  readonly defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2ZmZiI+PHBhdGggZD0iTTEyIDJDNi40NzcgMiAyIDYuNDc3IDIgMTJzNC40NzcgMTAgMTAgMTAgMTAtNC40NzcgMTAtMTBTMTcuNTIzIDIgMTIgMnptMCAyYzQuNDEgMCA4IDMuNTkgOCA4cy0zLjU5IDgtOCA4LTgtMy41OS04LThzMy41OS04IDgtOHoiLz48cGF0aCBkPSJNMTIgNmMtMS45MzMgMC0zLjUgMS41NjctMy41IDMuNXMxLjU2NyAzLjUgMy41IDMuNSAzLjUtMS41NjcgMy41LTMuNVMxMy45MzMgNiAxMiA2em0wIDVjLS44MjggMC0xLjUtLjY3Mi0xLjUtMS41UzExLjE3MiA4IDEyIDhzMS41LjY3MiAxLjUgMS41UzEyLjgyOCAxMSAxMiAxMXoiLz48cGF0aCBkPSJNMTIgMTJjLTIuNzYgMC01IDEuNzktNSA0aDEwYzAtMi4yMS0yLjI0LTQtNS00eiIvPjwvc3ZnPg==';
 
-  ngOnInit() {
-    this.autoresFiltrados = [...this.autores];
+  constructor(private autorService: AutorService) {}
+
+  ngOnInit(): void {
+    this.loadAutores();
   }
 
-  // Filtrar artistas
-  filterAutores() {
+  loadAutores(): void {
+    this.isLoading = true;
+    this.error = null;
+    
+    this.autorService.getAutores()
+      .pipe(
+        finalize(() => this.isLoading = false)
+      )
+      .subscribe({
+        next: (data: Autor[]) => {
+          // Asegurarse de que la foto_url siempre tenga un valor
+          this.autores = data.map(autor => ({
+            ...autor,
+            foto_url: autor.foto_url || 'assets/images/default-avatar.png' // Ruta a una imagen por defecto
+          }));
+          this.filterAutores(); // Aplicar filtros si hay algún término de búsqueda
+          this.filteredAutores = [...this.autores];
+        },
+        error: (err: Error) => {
+          this.error = err.message || 'Error al cargar los autores. Por favor, intente nuevamente.';
+          console.error('Error loading autores:', err);
+          this.autores = [];
+          this.filteredAutores = [];
+        }
+      });
+  }
+
+  /**
+   * Filtra la lista de autores según el término de búsqueda
+   */
+  filterAutores(): void {
     if (!this.searchTerm) {
-      this.autoresFiltrados = [...this.autores];
+      this.filteredAutores = [...this.autores];
       return;
     }
     
-    const term = this.searchTerm.toLowerCase();
-    this.autoresFiltrados = this.autores.filter(autor => 
-      autor.nombre.toLowerCase().includes(term) ||
-      autor.apellido.toLowerCase().includes(term) ||
-      autor.ocupacion.toLowerCase().includes(term)
+    const searchTerm = this.searchTerm.toLowerCase().trim();
+    this.filteredAutores = this.autores.filter(autor => 
+      (autor.nombre?.toLowerCase().includes(searchTerm) || '') ||
+      (autor.apellido?.toLowerCase().includes(searchTerm) || '') ||
+      (autor.ocupacion?.toLowerCase().includes(searchTerm) || '')
     );
   }
 
-  // Seleccionar artista para ver detalles
-  selectAutor(autor: Autor) {
-    this.selectedAutor = autor;
-  }
-
-  // Cerrar vista de detalles
-  closeDetails() {
-    this.selectedAutor = null;
-  }
-
-  // Formatear fecha
-  formatDate(dateString: string): string {
-    const options: Intl.DateTimeFormatOptions = { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    };
-    return new Date(dateString).toLocaleDateString('es-ES', options);
-  }
-
-  // Obtener iniciales
-  getInitials(nombre: string, apellido: string): string {
-    return `${nombre.charAt(0)}${apellido.charAt(0)}`.toUpperCase();
-  }
-
-  // Mostrar/ocultar formulario
-  toggleAddForm() {
-    this.showAddForm = !this.showAddForm;
-    if (!this.showAddForm) {
-      this.selectedAutor = null;
+  formatDate(dateString: string | undefined): string {
+    if (!dateString) return 'N/A';
+    
+    try {
+      const options: Intl.DateTimeFormatOptions = { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      };
+      return new Date(dateString).toLocaleDateString('es-ES', options);
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Fecha inválida';
     }
   }
 
-  // Inicializar nuevo artista
-  initNewAutor() {
-    this.selectedAutor = {
-      id: 0,
+  getInitials(nombre: string, apellido: string): string {
+    const first = (nombre?.charAt(0) || '').toUpperCase();
+    const last = (apellido?.charAt(0) || '').toUpperCase();
+    return first + last || '??';
+  }
+
+  toggleAddForm(): void {
+    this.showAddForm = !this.showAddForm;
+    if (!this.showAddForm) {
+      
+    }
+  }
+
+  /**
+   * Inicializa el formulario para un nuevo autor
+   */
+  initNewAutor(): void {
+    this.selectedAutor = null;
+    this.newAutor = {
       nombre: '',
       apellido: '',
       ocupacion: '',
-      foto_url: '',
-      created_at: new Date().toISOString().split('T')[0]
+      foto_url: null,
     };
+    this.selectedFile = null;
+    this.error = null;
     this.showAddForm = true;
   }
 
-  // Editar artista
-  editAutor(autor: Autor) {
+  cancelEdit(): void {
+    this.selectedAutor = null;
+    this.showAddForm = false;
+    this.newAutor = {
+      nombre: '',
+      apellido: '',
+      ocupacion: '',
+      foto_url: null,
+    };
+    this.selectedFile = null;
+  }
+
+  editAutor(autor: Autor): void {
     this.selectedAutor = { ...autor };
+    this.newAutor = {
+      nombre: autor.nombre,
+      apellido: autor.apellido,
+      ocupacion: autor.ocupacion,
+      foto_url: autor.foto_url
+    };
+    this.selectedFile = null;
+    this.error = null;
     this.showAddForm = true;
   }
 
-  // Eliminar artista
-  deleteAutor(id: number) {
-    if (confirm('¿Estás seguro de que deseas eliminar este autor?')) {
-      this.autores = this.autores.filter(a => a.id !== id);
-      this.filterAutores();
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      if (file) {
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          this.error = 'Por favor, selecciona un archivo de imagen válido';
+          input.value = ''; // Reset the input
+          return;
+        }
+        
+        // Validate file size (e.g., 5MB max)
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (file.size > maxSize) {
+          this.error = 'La imagen es demasiado grande. El tamaño máximo permitido es 5MB';
+          input.value = ''; // Reset the input
+          return;
+        }
+        
+        this.selectedFile = file;
+        
+        // If you want to show a preview of the selected image
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          // Update the preview if you have an image preview element
+          // This is optional and can be removed if not needed
+          const preview = document.getElementById('image-preview') as HTMLImageElement;
+          if (preview) {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+          }
+        };
+        reader.readAsDataURL(file);
+      }
     }
   }
 
-  // Guardar artista (crear o actualizar)
-  saveAutor() {
-    if (!this.selectedAutor) return;
+  /**
+   * Guarda un autor nuevo o existente
+   */
+  /**
+   * Elimina un autor por su ID
+   */
+  deleteAutor(id: number): void {
+    if (confirm('¿Está seguro de que desea eliminar este autor?')) {
+      this.isLoading = true;
+      this.autorService.deleteAutor(id).subscribe({
+        next: () => {
+          // Remove the deleted author from the list
+          this.autores = this.autores.filter(autor => autor.id !== id);
+          this.filterAutores(); // Update filtered list
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error al eliminar el autor:', error);
+          this.error = error.message || 'Ocurrió un error al eliminar el autor';
+          this.isLoading = false;
+        }
+      });
+    }
+  }
 
-    if (!this.selectedAutor.nombre || !this.selectedAutor.apellido || !this.selectedAutor.ocupacion) {
-      alert('Por favor completa todos los campos obligatorios');
+  saveAutor(): void {
+    // Validación básica
+    if (!this.newAutor.nombre?.trim() || !this.newAutor.apellido?.trim()) {
+      this.error = 'El nombre y apellido son campos obligatorios';
       return;
     }
 
-    if (this.selectedAutor.id === 0) {
-      // Nuevo autor
-      const newId = Math.max(0, ...this.autores.map(a => a.id)) + 1;
-      const newAutor: Autor = {
-        ...this.selectedAutor,
-        id: newId,
-        created_at: new Date().toISOString().split('T')[0]
-      };
-      this.autores.push(newAutor);
-    } else {
-      // Actualizar autor existente
-      const index = this.autores.findIndex(a => a.id === this.selectedAutor?.id);
-      if (index !== -1) {
-        this.autores[index] = { ...this.selectedAutor };
-      }
-    }
+    this.isLoading = true;
+    this.error = null;
 
-    this.filterAutores();
-    this.showAddForm = false;
-    this.selectedAutor = null;
+    // Crear FormData para el envío
+    const formData = this.autorService.createAutorFormData(this.newAutor, this.selectedFile || undefined);
+    
+    // Determinar si es una creación o actualización
+    const saveOperation = this.selectedAutor?.id
+      ? this.autorService.updateAutor(this.selectedAutor.id, formData)
+      : this.autorService.createAutor(formData);
+    
+    // Ejecutar la operación
+    saveOperation.pipe(
+      finalize(() => this.isLoading = false)
+    ).subscribe({
+      next: () => {
+        // Recargar la lista de autores
+        this.loadAutores();
+        // Cerrar el formulario y limpiar
+        this.showAddForm = false;
+        this.selectedAutor = null;
+        this.selectedFile = null;
+        
+        // Resetear el formulario
+        this.newAutor = {
+          nombre: '',
+          apellido: '',
+          ocupacion: '',
+          foto_url: null
+        };
+        
+        // Mostrar mensaje de éxito
+        this.error = null;
+      },
+      error: (err) => {
+        console.error('Error al guardar el autor:', err);
+        this.error = err.message || 'Ocurrió un error al guardar el autor. Por favor, intente nuevamente.';
+      }
+    });
   }
 }

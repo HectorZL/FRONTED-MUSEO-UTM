@@ -16,6 +16,28 @@
     </button>
   </div>
 
+  <!-- Error Message -->
+  <div *ngIf="error" class="fixed bottom-4 right-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-lg z-50">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <p class="text-sm">{{ error }}</p>
+      </div>
+      <div class="ml-4 flex-shrink-0">
+        <button (click)="error = null" class="text-red-500 hover:text-red-700 focus:outline-none">
+          <span class="sr-only">Cerrar</span>
+          <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Search Bar -->
   <div class="mb-6">
     <div class="relative max-w-md">
@@ -34,8 +56,16 @@
     </div>
   </div>
 
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="bg-white shadow overflow-hidden sm:rounded-lg p-6 text-center">
+    <div class="animate-pulse space-y-4">
+      <div class="h-4 bg-gray-200 rounded w-3/4 mx-auto"></div>
+      <div class="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+    </div>
+  </div>
+
   <!-- Autores Table -->
-  <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+  <div *ngIf="!isLoading" class="bg-white shadow overflow-hidden sm:rounded-lg">
     <div class="overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
@@ -55,14 +85,51 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr *ngFor="let autor of autoresFiltrados" class="hover:bg-gray-50">
+          <!-- Empty State -->
+          <tr *ngIf="filteredAutores.length === 0">
+            <td colspan="4" class="px-6 py-8 text-center">
+              <div class="text-gray-500">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">No se encontraron autores</h3>
+                <p class="mt-1 text-sm text-gray-500">
+                  {{ searchTerm ? 'No hay coincidencias con tu búsqueda.' : 'Comienza agregando un nuevo autor.' }}
+                </p>
+                <div class="mt-6">
+                  <button
+                    type="button"
+                    (click)="initNewAutor()"
+                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    Nuevo Autor
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Autores List -->
+          <tr *ngFor="let autor of filteredAutores" class="hover:bg-gray-50">
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
                 <div class="flex-shrink-0 h-10 w-10">
-                  <div *ngIf="!autor.foto_url" class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-medium">
-                    {{ getInitials(autor.nombre, autor.apellido) }}
+                  <div *ngIf="!autor.foto_url" 
+                       class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-medium overflow-hidden">
+                    <img [src]="defaultAvatar" 
+                         [alt]="'Avatar de ' + autor.nombre + ' ' + autor.apellido"
+                         class="w-full h-full object-cover"
+                         (error)="$event.target.style.display = 'none'">
+                    <span *ngIf="!autor.foto_url" class="text-xs">{{ getInitials(autor.nombre, autor.apellido) }}</span>
                   </div>
-                  <img *ngIf="autor.foto_url" class="h-10 w-10 rounded-full" [src]="autor.foto_url" [alt]="autor.nombre">
+                  <img *ngIf="autor.foto_url" 
+                       class="h-10 w-10 rounded-full object-cover" 
+                       [src]="autor.foto_url" 
+                       [alt]="'Foto de ' + autor.nombre + ' ' + autor.apellido"
+                       (error)="autor.foto_url = null">
                 </div>
                 <div class="ml-4">
                   <div class="text-sm font-medium text-gray-900">{{ autor.nombre }} {{ autor.apellido }}</div>
@@ -70,26 +137,28 @@
               </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ autor.ocupacion }}</div>
+              <div class="text-sm text-gray-900">{{ autor.ocupacion || 'Sin especificar' }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
               {{ formatDate(autor.created_at) }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
               <button (click)="editAutor(autor)" class="text-blue-600 hover:text-blue-900 mr-4">Editar</button>
-              <button (click)="deleteAutor(autor.id)" class="text-red-600 hover:text-red-900">Eliminar</button>
+              <button (click)="autor.id && deleteAutor(autor.id)" class="text-red-600 hover:text-red-900">Eliminar</button>
             </td>
           </tr>
           
           <!-- Empty state -->
-          <tr *ngIf="autoresFiltrados.length === 0">
+          <tr *ngIf="filteredAutores.length === 0">
             <td colspan="4" class="px-6 py-8 text-center text-gray-500">
               <div class="flex flex-col items-center justify-center">
                 <svg class="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p class="text-lg font-medium text-gray-600 mb-1">No se encontraron autores</p>
-                <p class="text-sm text-gray-500">Intenta con otros términos de búsqueda o agrega un nuevo autor</p>
+                <p class="text-lg font-medium text-gray-600 mb-1">
+                  {{ isLoading ? 'Cargando autores...' : 'No se encontraron autores' }}
+                </p>
+                <p *ngIf="!isLoading" class="text-sm text-gray-500">Intenta con otros términos de búsqueda o agrega un nuevo autor</p>
               </div>
             </td>
           </tr>
@@ -99,15 +168,15 @@
   </div>
 
   <!-- Add/Edit Autor Form Modal -->
-  <div *ngIf="showAddForm && selectedAutor" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+  <div *ngIf="showAddForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
       <div class="p-6">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-semibold text-gray-900">
-            {{ selectedAutor.id === 0 ? 'Nuevo Autor' : 'Editar Autor' }}
+            {{ selectedAutor ? 'Editar Autor' : 'Nuevo Autor' }}
           </h2>
           <button
-            (click)="toggleAddForm()"
+            (click)="cancelEdit()"
             class="text-gray-400 hover:text-gray-500"
           >
             <span class="sr-only">Cerrar</span>
@@ -123,7 +192,7 @@
             <input
               type="text"
               id="nombre"
-              [(ngModel)]="selectedAutor.nombre"
+              [(ngModel)]="newAutor.nombre"
               name="nombre"
               required
               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -135,7 +204,7 @@
             <input
               type="text"
               id="apellido"
-              [(ngModel)]="selectedAutor.apellido"
+              [(ngModel)]="newAutor.apellido"
               name="apellido"
               required
               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -143,42 +212,62 @@
           </div>
 
           <div>
-            <label for="ocupacion" class="block text-sm font-medium text-gray-700">Ocupación *</label>
+            <label for="ocupacion" class="block text-sm font-medium text-gray-700">Ocupación</label>
             <input
               type="text"
               id="ocupacion"
-              [(ngModel)]="selectedAutor.ocupacion"
+              [(ngModel)]="newAutor.ocupacion"
               name="ocupacion"
-              required
               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             >
           </div>
 
           <div>
-            <label for="foto_url" class="block text-sm font-medium text-gray-700">URL de la foto</label>
-            <input
-              type="url"
-              id="foto_url"
-              [(ngModel)]="selectedAutor.foto_url"
-              name="foto_url"
-              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="https://ejemplo.com/foto.jpg"
-            >
+            <label for="foto" class="block text-sm font-medium text-gray-700">Foto</label>
+            <div class="mt-1 flex items-center">
+              <input
+                type="file"
+                id="foto"
+                (change)="onFileSelected($event)"
+                accept="image/*"
+                class="block w-full text-sm text-gray-500
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-md file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-blue-50 file:text-blue-700
+                  hover:file:bg-blue-100"
+              >
+            </div>
+            <p class="mt-1 text-xs text-gray-500">Selecciona una imagen para el autor</p>
+            <div *ngIf="selectedAutor?.foto_url" class="mt-2">
+              <p class="text-xs text-gray-500">Foto actual:</p>
+              <img [src]="selectedAutor?.foto_url || ''" alt="Foto actual" class="h-20 w-20 object-cover rounded mt-1">
+            </div>
           </div>
 
           <div class="flex justify-end space-x-3 pt-4">
             <button
               type="button"
-              (click)="toggleAddForm()"
+              (click)="cancelEdit()"
               class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              [disabled]="isLoading"
+              class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {{ selectedAutor.id === 0 ? 'Crear' : 'Guardar' }}
+              <span *ngIf="isLoading" class="flex items-center">
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Procesando...
+              </span>
+              <span *ngIf="!isLoading">
+                {{ selectedAutor ? 'Actualizar' : 'Crear' }}
+              </span>
             </button>
           </div>
         </form>
