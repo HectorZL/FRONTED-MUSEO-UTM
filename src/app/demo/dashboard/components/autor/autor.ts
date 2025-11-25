@@ -1,7 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs/operators';
 import { AutorService, Autor } from '../../../../services/autor.service';
 
 interface NewAutor extends Omit<Autor, 'id' | 'created_at'> {
@@ -30,39 +29,47 @@ export class AutoresComponent implements OnInit {
     foto_url: null
   };
   selectedFile: File | null = null;
-  
+
   // Default avatar as a data URL - SVG of a user icon
   readonly defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2ZmZiI+PHBhdGggZD0iTTEyIDJDNi40NzcgMiAyIDYuNDc3IDIgMTJzNC40NzcgMTAgMTAgMTAgMTAtNC40NzcgMTAtMTBTMTcuNTIzIDIgMTIgMnptMCAyYzQuNDEgMCA4IDMuNTkgOCA4cy0zLjU5IDgtOCA4LTgtMy41OS04LThzMy41OS04IDgtOHoiLz48cGF0aCBkPSJNMTIgNmMtMS45MzMgMC0zLjUgMS41NjctMy41IDMuNXMxLjU2NyAzLjUgMy41IDMuNSAzLjUtMS41NjcgMy41LTMuNVMxMy45MzMgNiAxMiA2em0wIDVjLS44MjggMC0xLjUtLjY3Mi0xLjUtMS41UzExLjE3MiA4IDEyIDhzMS41LjY3MiAxLjUgMS41UzEyLjgyOCAxMSAxMiAxMXoiLz48cGF0aCBkPSJNMTIgMTJjLTIuNzYgMC01IDEuNzktNSA0aDEwYzAtMi4yMS0yLjI0LTQtNS00eiIvPjwvc3ZnPg==';
 
-  constructor(private autorService: AutorService) {}
+  constructor(
+    private autorService: AutorService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
+    console.log('ngOnInit() called');
     this.loadAutores();
   }
 
   loadAutores(): void {
+    console.log('loadAutores() called - setting isLoading to true');
     this.isLoading = true;
     this.error = null;
-    
+
     this.autorService.getAutores()
-      .pipe(
-        finalize(() => this.isLoading = false)
-      )
       .subscribe({
         next: (data: Autor[]) => {
+          console.log('getAutores() success - received data:', data);
           // Asegurarse de que la foto_url siempre tenga un valor
           this.autores = data.map(autor => ({
             ...autor,
-            foto_url: autor.foto_url || 'assets/images/default-avatar.png' // Ruta a una imagen por defecto
+            foto_url: autor.foto_url || 'assets/images/default-avatar.png'
           }));
-          this.filterAutores(); // Aplicar filtros si hay algún término de búsqueda
           this.filteredAutores = [...this.autores];
+          console.log('Setting isLoading to false - autores count:', this.autores.length);
+          this.isLoading = false;
+          this.cdr.detectChanges(); // Forzar detección de cambios
         },
         error: (err: Error) => {
+          console.error('getAutores() error:', err);
           this.error = err.message || 'Error al cargar los autores. Por favor, intente nuevamente.';
-          console.error('Error loading autores:', err);
           this.autores = [];
           this.filteredAutores = [];
+          console.log('Setting isLoading to false after error');
+          this.isLoading = false;
+          this.cdr.detectChanges(); // Forzar detección de cambios
         }
       });
   }
@@ -75,9 +82,9 @@ export class AutoresComponent implements OnInit {
       this.filteredAutores = [...this.autores];
       return;
     }
-    
+
     const searchTerm = this.searchTerm.toLowerCase().trim();
-    this.filteredAutores = this.autores.filter(autor => 
+    this.filteredAutores = this.autores.filter(autor =>
       (autor.nombre?.toLowerCase().includes(searchTerm) || '') ||
       (autor.apellido?.toLowerCase().includes(searchTerm) || '') ||
       (autor.ocupacion?.toLowerCase().includes(searchTerm) || '')
@@ -86,12 +93,12 @@ export class AutoresComponent implements OnInit {
 
   formatDate(dateString: string | undefined): string {
     if (!dateString) return 'N/A';
-    
+
     try {
-      const options: Intl.DateTimeFormatOptions = { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+      const options: Intl.DateTimeFormatOptions = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
       };
       return new Date(dateString).toLocaleDateString('es-ES', options);
     } catch (error) {
@@ -109,7 +116,7 @@ export class AutoresComponent implements OnInit {
   toggleAddForm(): void {
     this.showAddForm = !this.showAddForm;
     if (!this.showAddForm) {
-      
+
     }
   }
 
@@ -165,7 +172,7 @@ export class AutoresComponent implements OnInit {
           input.value = ''; // Reset the input
           return;
         }
-        
+
         // Validate file size (e.g., 5MB max)
         const maxSize = 5 * 1024 * 1024; // 5MB
         if (file.size > maxSize) {
@@ -173,9 +180,9 @@ export class AutoresComponent implements OnInit {
           input.value = ''; // Reset the input
           return;
         }
-        
+
         this.selectedFile = file;
-        
+
         // If you want to show a preview of the selected image
         const reader = new FileReader();
         reader.onload = (e: any) => {
@@ -192,9 +199,6 @@ export class AutoresComponent implements OnInit {
     }
   }
 
-  /**
-   * Guarda un autor nuevo o existente
-   */
   /**
    * Elimina un autor por su ID
    */
@@ -217,6 +221,9 @@ export class AutoresComponent implements OnInit {
     }
   }
 
+  /**
+   * Guarda un autor nuevo o existente
+   */
   saveAutor(): void {
     // Validación básica
     if (!this.newAutor.nombre?.trim() || !this.newAutor.apellido?.trim()) {
@@ -229,24 +236,22 @@ export class AutoresComponent implements OnInit {
 
     // Crear FormData para el envío
     const formData = this.autorService.createAutorFormData(this.newAutor, this.selectedFile || undefined);
-    
+
     // Determinar si es una creación o actualización
     const saveOperation = this.selectedAutor?.id
       ? this.autorService.updateAutor(this.selectedAutor.id, formData)
       : this.autorService.createAutor(formData);
-    
+
     // Ejecutar la operación
-    saveOperation.pipe(
-      finalize(() => this.isLoading = false)
-    ).subscribe({
+    saveOperation.subscribe({
       next: () => {
-        // Recargar la lista de autores
-        this.loadAutores();
-        // Cerrar el formulario y limpiar
+        // Cerrar el formulario y limpiar inmediatamente
         this.showAddForm = false;
+        this.isLoading = false;
+
         this.selectedAutor = null;
         this.selectedFile = null;
-        
+
         // Resetear el formulario
         this.newAutor = {
           nombre: '',
@@ -254,13 +259,17 @@ export class AutoresComponent implements OnInit {
           ocupacion: '',
           foto_url: null
         };
-        
+
         // Mostrar mensaje de éxito
         this.error = null;
+
+        // Recargar la lista de autores después de cerrar el modal
+        this.loadAutores();
       },
       error: (err) => {
         console.error('Error al guardar el autor:', err);
         this.error = err.message || 'Ocurrió un error al guardar el autor. Por favor, intente nuevamente.';
+        this.isLoading = false;
       }
     });
   }
