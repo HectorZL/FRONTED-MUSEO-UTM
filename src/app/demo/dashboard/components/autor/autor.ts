@@ -3,6 +3,17 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AutorService, Autor } from '../../../../services/autor.service';
 
+// PrimeNG Imports
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { FileUploadModule } from 'primeng/fileupload';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { AvatarModule } from 'primeng/avatar';
+import { MessageService, ConfirmationService } from 'primeng/api';
+
 interface NewAutor extends Omit<Autor, 'id' | 'created_at'> {
   // Extends Autor interface but makes id and created_at optional for new entries
 }
@@ -10,7 +21,19 @@ interface NewAutor extends Omit<Autor, 'id' | 'created_at'> {
 @Component({
   selector: 'app-autores',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TableModule,
+    ButtonModule,
+    DialogModule,
+    InputTextModule,
+    FileUploadModule,
+    ToastModule,
+    ConfirmDialogModule,
+    AvatarModule
+  ],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './autor.html',
   styleUrls: ['./autor.scss']
 })
@@ -35,7 +58,9 @@ export class AutoresComponent implements OnInit {
 
   constructor(
     private autorService: AutorService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private messageService: MessageService,
+    private confirmationService: ConfirmationService
   ) { }
 
   ngOnInit(): void {
@@ -168,7 +193,11 @@ export class AutoresComponent implements OnInit {
       if (file) {
         // Validate file type
         if (!file.type.startsWith('image/')) {
-          this.error = 'Por favor, selecciona un archivo de imagen válido';
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Advertencia',
+            detail: 'Por favor, selecciona un archivo de imagen válido'
+          });
           input.value = ''; // Reset the input
           return;
         }
@@ -176,7 +205,11 @@ export class AutoresComponent implements OnInit {
         // Validate file size (e.g., 5MB max)
         const maxSize = 5 * 1024 * 1024; // 5MB
         if (file.size > maxSize) {
-          this.error = 'La imagen es demasiado grande. El tamaño máximo permitido es 5MB';
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Advertencia',
+            detail: 'La imagen es demasiado grande. El tamaño máximo permitido es 5MB'
+          });
           input.value = ''; // Reset the input
           return;
         }
@@ -203,22 +236,35 @@ export class AutoresComponent implements OnInit {
    * Elimina un autor por su ID
    */
   deleteAutor(id: number): void {
-    if (confirm('¿Está seguro de que desea eliminar este autor?')) {
-      this.isLoading = true;
-      this.autorService.deleteAutor(id).subscribe({
-        next: () => {
-          // Remove the deleted author from the list
-          this.autores = this.autores.filter(autor => autor.id !== id);
-          this.filterAutores(); // Update filtered list
-          this.isLoading = false;
-        },
-        error: (error) => {
-          console.error('Error al eliminar el autor:', error);
-          this.error = error.message || 'Ocurrió un error al eliminar el autor';
-          this.isLoading = false;
-        }
-      });
-    }
+    this.confirmationService.confirm({
+      message: '¿Está seguro de que desea eliminar este autor?',
+      header: 'Confirmar Eliminación',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.isLoading = true;
+        this.autorService.deleteAutor(id).subscribe({
+          next: () => {
+            // Remove the deleted author from the list
+            this.autores = this.autores.filter(autor => autor.id !== id);
+            this.filterAutores(); // Update filtered list
+            this.isLoading = false;
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Éxito',
+              detail: 'Autor eliminado correctamente'
+            });
+          },
+          error: (error) => {
+            console.error('Error al eliminar el autor:', error);
+            this.isLoading = false;
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+            });
+          }
+        });
+      }
+    });
   }
 
   /**
@@ -227,12 +273,15 @@ export class AutoresComponent implements OnInit {
   saveAutor(): void {
     // Validación básica
     if (!this.newAutor.nombre?.trim() || !this.newAutor.apellido?.trim()) {
-      this.error = 'El nombre y apellido son campos obligatorios';
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Advertencia',
+        detail: 'El nombre y apellido son campos obligatorios'
+      });
       return;
     }
 
     this.isLoading = true;
-    this.error = null;
 
     // Crear FormData para el envío
     const formData = this.autorService.createAutorFormData(this.newAutor, this.selectedFile || undefined);
@@ -261,15 +310,22 @@ export class AutoresComponent implements OnInit {
         };
 
         // Mostrar mensaje de éxito
-        this.error = null;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Éxito',
+          detail: `Autor ${this.selectedAutor ? 'actualizado' : 'creado'} correctamente`
+        });
 
         // Recargar la lista de autores después de cerrar el modal
         this.loadAutores();
       },
       error: (err) => {
         console.error('Error al guardar el autor:', err);
-        this.error = err.message || 'Ocurrió un error al guardar el autor. Por favor, intente nuevamente.';
         this.isLoading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error'
+        });
       }
     });
   }
