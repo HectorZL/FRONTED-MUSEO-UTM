@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  apiUrl: 'https://galeria-museo-utm.onrender.com/api',
+  apiUrl: 'https://bakcend-express-museo.vercel.app/api',
   jwtKey: '^k$j9X2HNZSG4rfz7&IdFeZkJh2mgJ'
 };
 
