@@ -9,7 +9,7 @@ const targetPathProd = path.join(__dirname, './src/environments/environment.prod
 
 // Get environment variables or use defaults
 // Default to the existing values if env vars are not set
-const apiUrl = process.env.API_URL || 'https://galeria-museo-utm.onrender.com/api';
+const apiUrl = process.env.API_URL || 'https://bakcend-express-museo.vercel.app/api';
 const jwtKey = process.env.JWT_KEY || '^k$j9X2HNZSG4rfz7&IdFeZkJh2mgJ';
 
 // Create the content for the environment files
